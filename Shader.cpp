@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     std::string vertexCode = leerArchivoShader(vertexPath);

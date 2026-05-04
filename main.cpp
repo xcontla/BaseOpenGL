@@ -9,6 +9,7 @@ const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
 
 GLuint VAO, VBO, EBO, FBO, RBO, texture;
+GLuint cubeVAO, cubeVBO, cubeEBO;
 GLFWwindow* window = NULL;
 
 // timing
@@ -45,10 +46,75 @@ int initFrameworks() {
     return 0;
 }
 
+void initCube ()
+{
+
+    float cubeVertices[] = {
+        // posiciones         
+        -5.0f, 5.0f, -5.0f,    0.0f, 0.0f,// v0
+         5.0f, 5.0f, -5.0f,    1.0f, 0.0f,// v1
+         5.0f, 5.0f,  5.0f,    1.0f, 1.0f,// v2
+        -5.0f, 5.0f,  5.0f,    0.0f, 1.0f,// v3
+     
+        -5.0f, -5.0f, -5.0f,   1.0f, 0.0f,// v4
+         5.0f, -5.0f, -5.0f,   1.0f, 1.0f,// v5
+         5.0f, -5.0f,  5.0f,   0.0f, 1.0f,// v6
+        -5.0f, -5.0f,  5.0f,    0.0f, 0.0f// v7
+
+    };
+
+    /*
+    *
+    *   v0 ---------- v1
+    *   |\            | \
+    *   | \           |  \
+    *   |  v3 ---------- v2 
+    *   |   |         |   |
+    *   |   |         |   |
+    *   v4--|---------v5  |
+    *    \  |          \  |
+    *     \ |           \ |
+    *       v7 ---------- v6
+    *
+    */
+
+    
+    unsigned int indices[] = { 
+        0, 2, 1, 0, 3, 1,  // top
+        3, 7, 6, 3, 6, 2,  // front
+        4, 5, 7, 5, 6, 7,  // bottom
+        0, 1, 5, 0, 5, 4,  // back
+        0, 4, 3, 3, 4, 7,  // left
+        2, 5, 6, 6, 5, 2   // right
+    };
+
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glGenBuffers(1, &cubeEBO);
+
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    
+    glBindVertexArray(0);
+
+
+
+}
+
 void initGeometry()
 {
 
-    // --- Vértices del plano ---
+    // --- Vï¿½rtices del plano ---
     float planeVertices[] = {
         // posiciones         // texcoords
         -5.0f, 0.0f, -5.0f,   0.0f, 0.0f,
@@ -82,7 +148,7 @@ int initRenderBufferObject() {
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-    // Creamos una textura donde guardar la información del renderizado
+    // Creamos una textura donde guardar la informaciï¿½n del renderizado
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -92,7 +158,7 @@ int initRenderBufferObject() {
 
 
     //Se crea un framebuffer object para renderizar
-    // Este Framebuffer puede escribir y leer pixeles de algún lugar
+    // Este Framebuffer puede escribir y leer pixeles de algï¿½n lugar
     glGenFramebuffers(1, &RBO);
     //Utilizamos el FBO
     glBindFramebuffer(GL_RENDERBUFFER, RBO);
@@ -114,6 +180,7 @@ int main() {
     
     if (initFrameworks() < 0)
         return -1;
+    initCube();
     initGeometry();
     if(initRenderBufferObject() < 0)
         return -1;
@@ -121,7 +188,7 @@ int main() {
     Shader shader("./shaders/plane.vert", "./shaders/plane.frag");
     Shader shader2("./shaders/render.vert", "./shaders/render.frag");
 
-    // --- Cámara básica ---
+    // --- Cï¿½mara bï¿½sica ---
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::lookAt(glm::vec3(10.0f,10.0f, 10.0f),
         glm::vec3(0.0f, 0.0f, 0.0f),
@@ -151,8 +218,8 @@ int main() {
         shader.setMat4("uView", &view[0][0]);
         shader.setMat4("uProj", &proj[0][0]);
 
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(cubeVAO);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
